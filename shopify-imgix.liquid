@@ -1,0 +1,57 @@
+{% capture image_url %}
+  {% comment %}
+    Imgix Image API Reference
+      - https://www.imgix.com/docs/reference
+  {% endcomment %}
+  {% assign imgix_domain = settings.imgix_domain %}
+  {% capture imgix_api %}bri,con,exp,gam,high,hue,invert,sat,shad,sharp,usm,usmrad,vib,auto,bg,blend,bm,ba,balph,bp,bw,bh,bf,bc,bs,bx,by,border,pad,faceindex,facepad,faces,ch,chromasub,colorquant,dl,dpi,fm,lossless,q,mask,nr,nrs,colors,palette,prefix,page,dpr,flip,or,rot,crop,fit,h,rect,w,blur,htn,mono,px,sepia,txt,txtalign,txtclip,txtclr,txtfit,txtfont,txtline,txtlineclr,txtpad,txtshad,txtsize,txtwidth,trim,trimcolor,trimmd,trimsd,trimtol,~text,txtlead,txttrack,mark,markalign,markalpha,markbase,markfit,markh,markpad,markscale,markw,markx,marky{% endcapture %}
+  {% assign shopify_asset_url = settings.shopify_asset_url %}
+  {% assign source_image_url = path %}
+
+  {% if settings.imgix_enable
+    and settings.imgix_domain != nil
+    and source_image_url contains shopify_asset_url %}
+
+    {% comment %}
+      Create an array of Imgix parameters
+    {% endcomment %}
+    {% assign imgix_api = imgix_api | split: "," %}
+
+    {% comment %}
+      Generate URL-encoded query string
+    {% endcomment %}
+    {% assign query_string = "?" %}
+
+    {% comment %}
+      Fix query string if path URL contains cache busting parameter
+    {% endcomment %}
+    {% if shopify_image_url contains "?" %}
+      {% assign query_string = query_string | replace_first: "?", "&" %}
+    {% endif %}
+
+    {% for param in imgix_api %}
+      {% unless [param] %}
+        {% continue %}
+      {% endunless %}
+
+      {% assign field = param %}
+      {% assign value = [param] | url_param_escape %}
+      {% assign query_string = query_string | append: field | append: "=" | append: value | append: "&" %}
+    {% endfor %}
+
+    {% comment %}
+      Remove last ampersand from query string
+    {% endcomment %}
+    {% assign length = query_string | size | minus: 1 %}
+    {% assign query_string = query_string | slice: 0, length %}
+
+    {% comment %}
+      Build image url and append Imgix query parameters
+    {% endcomment %}
+    {% assign imgix_image_url = source_image_url | replace: source_image_url, imgix_domain | append: query_string %}
+
+    {{ imgix_image_url }}
+  {% else %}
+    {{ source_image_url }}
+  {% endif %}
+{% endcapture %}{{ image_url | strip }}
