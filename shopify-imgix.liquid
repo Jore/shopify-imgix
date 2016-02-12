@@ -48,7 +48,7 @@
     {% comment %}
       Build image url and append Imgix query parameters
     {% endcomment %}
-    {% assign imgix_image_url = source_image_url | replace: source_image_url, imgix_domain | append: query_string %}
+    {% assign imgix_image_url = source_image_url | replace: shopify_asset_url, imgix_domain | append: query_string %}
 
     {{ imgix_image_url }}
   {% else %}
